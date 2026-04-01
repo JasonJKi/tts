@@ -66,9 +66,9 @@ class MLXBackend(BaseModelBackend):
     async def _load_model(self) -> None:
         """Load the model (heavy, runs in thread pool)."""
         def _load():
-            from mlx_audio.tts.utils import load_model
+            from mlx_audio.tts.utils import load
             logger.info("Loading MLX model: %s ...", self.model_id)
-            model = load_model(self.model_id)
+            model = load(self.model_id)
             logger.info("MLX model loaded successfully")
             return model
 

@@ -20,7 +20,8 @@ dependencies = [
 
 [project.optional-dependencies]
 mlx = [
-    "mlx-audio",
+    "mlx-audio[tts]",
+    "tiktoken",
 ]
 dev = [
     "pytest>=8.0.0",
