@@ -69,6 +69,7 @@ class GenerationResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     status: str
-    model_server: str
-    model: str
+    backend: str
+    healthy: bool
     version: str
+    system: dict

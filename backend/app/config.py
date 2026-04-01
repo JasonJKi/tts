@@ -6,9 +6,15 @@ class Settings(BaseSettings):
     app_name: str = "Voxtral TTS Platform"
     debug: bool = False
 
-    # vLLM-Omni model server
+    # Backend selection: "auto", "mlx", "vllm"
+    backend: str = "auto"
+
+    # MLX backend (Apple Silicon)
+    mlx_model_id: str = "mlx-community/Voxtral-4B-TTS-2603-mlx-4bit"
+
+    # vLLM-Omni backend (NVIDIA GPU)
     vllm_base_url: str = "http://localhost:8091"
-    vllm_model: str = "mistralai/Voxtral-4B-TTS-2603"
+    vllm_model_id: str = "mistralai/Voxtral-4B-TTS-2603"
 
     # Database
     database_url: str = "sqlite+aiosqlite:///./data/db/voxtral.db"

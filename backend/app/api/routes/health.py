@@ -1,18 +1,27 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Request
 
-from app.dependencies import get_vllm_client
-from app.engine.model_manager import VLLMClient
 from app.models.schemas import HealthResponse
 
 router = APIRouter()
 
 
 @router.get("/health", response_model=HealthResponse)
-async def health_check(client: VLLMClient = Depends(get_vllm_client)):
-    await client.check_health()
+async def health_check(request: Request):
+    backend = request.app.state.model_backend
+    system_info = request.app.state.system_info
+
+    await backend.check_health()
+
     return HealthResponse(
-        status="ok" if client.is_healthy else "degraded",
-        model_server="connected" if client.is_healthy else "unreachable",
-        model=client.model,
+        status="ok" if backend.is_healthy else "degraded",
+        backend=backend.backend_name,
+        healthy=backend.is_healthy,
         version="0.1.0",
+        system=dict(
+            os=system_info.os,
+            arch=system_info.arch,
+            gpu=system_info.gpu,
+            ram_gb=system_info.ram_gb,
+            python_version=system_info.python_version,
+        ),
     )

@@ -1,7 +1,7 @@
-"""High-level inference interface wrapping the vLLM client.
+"""High-level inference interface wrapping the model backend.
 
-Handles voice resolution (mapping voice_id -> reference audio or preset name)
-and audio post-processing.
+Handles voice resolution and provides a clean async interface
+regardless of which backend (MLX or vLLM) is active.
 """
 
 import io
@@ -10,11 +10,11 @@ from typing import AsyncGenerator
 
 import soundfile as sf
 
-from app.engine.model_manager import VLLMClient
+from app.engine.model_manager import BaseModelBackend
 
 logger = logging.getLogger(__name__)
 
-# Built-in voices available in vLLM-Omni / Voxtral
+# Built-in voices available in Voxtral
 BUILTIN_VOICES = [
     "casual_male",
     "casual_female",
@@ -28,8 +28,8 @@ BUILTIN_VOICES = [
 
 
 class InferenceEngine:
-    def __init__(self, vllm_client: VLLMClient):
-        self.client = vllm_client
+    def __init__(self, backend: BaseModelBackend):
+        self.backend = backend
 
     async def generate(
         self,
@@ -39,7 +39,7 @@ class InferenceEngine:
         speed: float = 1.0,
     ) -> bytes:
         """Generate complete audio for the given text."""
-        return await self.client.synthesize(
+        return await self.backend.synthesize(
             text=text,
             voice=voice,
             response_format=output_format,
@@ -54,7 +54,7 @@ class InferenceEngine:
         speed: float = 1.0,
     ) -> AsyncGenerator[bytes, None]:
         """Stream audio chunks as they're generated."""
-        async for chunk in self.client.synthesize_stream(
+        async for chunk in self.backend.synthesize_stream(
             text=text,
             voice=voice,
             response_format=output_format,

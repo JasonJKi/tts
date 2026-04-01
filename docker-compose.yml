@@ -1,7 +1,9 @@
 services:
-  # Voxtral model server (vLLM-Omni)
+  # Voxtral model server (vLLM-Omni) - only needed on Linux with NVIDIA GPU
+  # Activate with: docker compose --profile gpu up
   model-server:
     image: vllm/vllm-omni:latest
+    profiles: ["gpu"]
     command: >
       vllm serve mistralai/Voxtral-4B-TTS-2603
       --stage-configs-path /vllm_omni/model_executor/stage_configs/voxtral_tts.yaml
@@ -27,21 +29,20 @@ services:
       retries: 5
       start_period: 120s
 
-  # FastAPI backend
+  # FastAPI backend (auto-detects MLX or vLLM)
   backend:
     build: ./backend
     ports:
       - "8000:8000"
     environment:
-      - TTS_VLLM_BASE_URL=http://model-server:8091
+      - TTS_BACKEND=auto
       - TTS_DATABASE_URL=sqlite+aiosqlite:///./data/db/voxtral.db
       - TTS_CORS_ORIGINS=["http://localhost:3000"]
+      # Only used if backend=vllm
+      - TTS_VLLM_BASE_URL=http://model-server:8091
     volumes:
       - ./data/voices:/app/data/voices
       - ./data/db:/app/data/db
-    depends_on:
-      model-server:
-        condition: service_healthy
     restart: unless-stopped
 
   # Next.js frontend

@@ -23,8 +23,8 @@ async def websocket_tts(websocket: WebSocket):
       Server sends JSON: {"type": "error", "detail": "..."} on error
     """
     await websocket.accept()
-    vllm_client = websocket.app.state.vllm_client
-    engine = InferenceEngine(vllm_client)
+    backend = websocket.app.state.model_backend
+    engine = InferenceEngine(backend)
 
     try:
         while True:
