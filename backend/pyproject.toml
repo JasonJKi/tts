@@ -1,0 +1,33 @@
+[project]
+name = "voxtral-tts-platform"
+version = "0.1.0"
+description = "Self-hosted TTS platform powered by Voxtral-4B-TTS-2603"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "httpx>=0.28.0",
+    "sqlalchemy[asyncio]>=2.0.0",
+    "aiosqlite>=0.20.0",
+    "alembic>=1.14.0",
+    "python-multipart>=0.0.18",
+    "pydub>=0.25.1",
+    "soundfile>=0.13.0",
+    "numpy>=1.26.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+]
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -1,0 +1,60 @@
+services:
+  # Voxtral model server (vLLM-Omni)
+  model-server:
+    image: vllm/vllm-omni:latest
+    command: >
+      vllm serve mistralai/Voxtral-4B-TTS-2603
+      --stage-configs-path /vllm_omni/model_executor/stage_configs/voxtral_tts.yaml
+      --omni
+      --port 8091
+      --trust-remote-code
+      --enforce-eager
+    ports:
+      - "8091:8091"
+    volumes:
+      - huggingface-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # FastAPI backend
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - TTS_VLLM_BASE_URL=http://model-server:8091
+      - TTS_DATABASE_URL=sqlite+aiosqlite:///./data/db/voxtral.db
+      - TTS_CORS_ORIGINS=["http://localhost:3000"]
+    volumes:
+      - ./data/voices:/app/data/voices
+      - ./data/db:/app/data/db
+    depends_on:
+      model-server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Next.js frontend
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  huggingface-cache:
